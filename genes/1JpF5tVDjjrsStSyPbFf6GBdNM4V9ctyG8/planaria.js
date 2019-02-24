@@ -44,8 +44,10 @@ module.exports = {
       data: m.input.block.items
         .filter((txn) => txn.out.find((out) => out.b0.op == 106))
         .map((txn) => {
-          const opRet = out.find((out) => out.b0.op == 106);
+          const opRet = txn.out.find((out) => out.b0.op == 106);
           return {
+            tx: txn.tx,
+            blk: txn.blk,
             stuff: opRet.s1
           }
         }),
