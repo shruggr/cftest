@@ -41,7 +41,14 @@ module.exports = {
     console.log("## onblock", "Block Size: ", m.input.block.items.length, "Mempool Size: ", m.input.mempool.items.size)
     await m.state.create({
       name: "b",
-      data: m.input.block.items.filter((txn) => txn.out.find((out) => out.b0.op == 106)),
+      data: m.input.block.items
+        .filter((txn) => txn.out.find((out) => out.b0.op == 106))
+        .map((txn) => {
+          const opRet = out.find((out) => out.b0.op == 106);
+          return {
+            stuff: opRet.s1
+          }
+        }),
       onerror: function(e) {
         if (e.code != 11000) {
           console.log("# Error", e, m.input, m.clock.bitcoin.now, m.clock.self.now)
