@@ -30,16 +30,16 @@ module.exports = {
     console.log("## onblock", "Block Size: ", m.input.block.items.length, "Mempool Size: ", m.input.mempool.items.size)
     await m.state.create({
       name: "b",
-      data: m.input.block.items
-        .filter((txn) => txn.out[0].s1 == '18pojMVnZYDa19aqEo46ZdE1FSQBwU54zX')
-        .map((txn) => {
-          return {
-            blk: txn.blk,
-            tx: txn.tx,
-            hashChain: txn.out[0].s2,
-            commitTxns: [txn.out[0].s3, txn.out[0].s4]
-          }
-        }),
+      data: m.input.block.items,
+        // .filter((txn) => txn.out[0].s1 == '18pojMVnZYDa19aqEo46ZdE1FSQBwU54zX')
+        // .map((txn) => {
+        //   return {
+        //     blk: txn.blk,
+        //     tx: txn.tx,
+        //     hashChain: txn.out[0].s2,
+        //     commitTxns: [txn.out[0].s3, txn.out[0].s4]
+        //   }
+        // }),
       onerror: function(e) {
         if (e.code != 11000) {
           console.log("# Error", e, m.input, m.clock.bitcoin.now, m.clock.self.now)
