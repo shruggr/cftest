@@ -1,0 +1,8 @@
+module.exports = {
+    BATTLE: "18pojMVnZYDa19aqEo46ZdE1FSQBwU54zX",
+    COMMIT: "1DknJFhdEkwgn4hCWL4iCBWg7ZKm1h2hNC",
+    INIT: "1AS2ESCbWKo6HVbEy7aznkCgQunPfT6hBN",
+    STATE: "1KgH6URXsAxte9xsuetviVd2kH4Zn3YU1C",
+    VALIDATOR: "149qjwS8MsJQszQu7Rsybya2zrm6Ff5Qhe",
+    FIGHTER: "167WW15VDSqTx4EJ8RtUtVUWxhSy6HZ6kk"
+}

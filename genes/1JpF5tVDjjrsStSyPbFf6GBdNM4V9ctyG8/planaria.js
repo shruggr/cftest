@@ -1,3 +1,51 @@
+const { COMMIT } = require('./constants');
+
+function commitMap(txn) {
+  const opRet = txn.out.find((out) => out.b0.op == 106);
+  return {
+    tx: txn.tx,
+    blk: txn.blk,
+    v: opRet.s2,
+    c: opRet.s3
+  }
+}
+
+function fighterMap(txn) {
+  const opRet = txn.out.find((out) => out.b0.op == 106);
+  return {
+    tx: txn.tx,
+    blk: txn.blk,
+    fighter: opRet.s2
+  }
+}
+
+function create(m, collection, values) {
+  return m.state
+    .create({
+      name: collection,
+      data: values,
+      onerror: function (e) {
+        if (e.code != 11000) {
+          console.log("# Error", e, m.input, m.clock.bitcoin.now, m.clock.self.now)
+          process.exit()
+        }
+      }
+    })
+    .catch(function (e) {
+      console.log("# onblock error = ", e)
+      process.exit()
+    })
+    .then(() => {
+      for (let value of values) {
+        m.output.publish({
+          name: collection,
+          data: value
+        });
+      }
+    });
+}
+
+
 /***************************************
 *
 * Crawl Everything
@@ -13,6 +61,12 @@ module.exports = {
   description: '',
   address: '1JpF5tVDjjrsStSyPbFf6GBdNM4V9ctyG8',
   index: {
+    commit: {
+      keys: [
+        'tx.h', 'blk.i', 'blk.t', 'blk.h', 'v', 'c'
+      ],
+      unique: ['tx.h']
+    },
     fighter: {
       keys: [
         'tx.h', 'blk.i', 'blk.t', 'blk.h'
@@ -20,77 +74,76 @@ module.exports = {
       unique: ['tx.h']
     }
   },
-  onmempool: async function(m) {
+  onmempool: async function (m) {
     // Triggered for every mempool tx event
     // https://docs.planaria.network/#/api?id=onmempool
     console.log("## onmempool", m.input)
-    // await m.state.create({
-    //   name: "u",
-    //   data: m.input
-    // }).catch(function(e) {
-    //   console.log("# onmempool error = ", e)
-    // })
-    // m.output.publish({
-    //   name: "u",
-    //   data: m.input
-    // })
+    const opRet = m.input.out.find((out) => out.b0.op == 106);
+    if (!opRet) continue;
+
+    switch (opRet.s2) {
+      case COMMIT:
+        create(m, 'commit', [m.input]);
+        break;
+      case FIGHER:
+        create(m, 'fighter', [m.input]);
+        break;
+    }
   },
-  onblock: async function(m) {
+  onblock: async function (m) {
     // Triggered for every new block event
     // https://docs.planaria.network/#/api?id=onblock
     console.log("## onblock", "Block Size: ", m.input.block.items.length, "Mempool Size: ", m.input.mempool.items.size)
-    await m.state.create({
-      name: "fighter",
-      data: m.input.block.items
-        .filter((txn) => {
-          const opRet = txn.out.find((out) => out.b0.op == 106);
-          return opRet && opRet.s1 == "167WW15VDSqTx4EJ8RtUtVUWxhSy6HZ6kk"
-        })
-        .map((txn) => {
-          const opRet = txn.out.find((out) => out.b0.op == 106);
-          return {
-            tx: txn.tx,
-            blk: txn.blk,
-            fighter: opRet.s2
-          }
-        }),
-      onerror: function(e) {
-        if (e.code != 11000) {
-          console.log("# Error", e, m.input, m.clock.bitcoin.now, m.clock.self.now)
-          process.exit()
-        }
-      }
-    }).catch(function(e) {
-      console.log("# onblock error = ", e)
-      process.exit()
-    })
 
-    m.input.block.items.forEach(function(i) {
-      m.output.publish({
-        name: "fighter",
-        data: i
-      })
-    })
-  },
-  onrestart: async function(m) {
-    // Clean up from the last clock timestamp
-    await m.state.delete({
-      name: 'fighter',
-      filter: {
-        find: {
-          "blk.i": { $gt: m.clock.self.now }
-        }
-      },
-      onerror: function(e) {
-        // duplicates are ok because they will be ignored
-        if (e.code !== 11000) {
-          console.log('## ERR ', e, m.clock.bitcoin.now, m.clock.self.now)
-          process.exit()
-        }
+    const commits = [];
+    const fighters = [];
+
+    for (let txn of m.input.block.items) {
+      const opRet = txn.out.find((out) => out.b0.op == 106);
+      if (!opRet) continue;
+
+      switch (opRet.s2) {
+        case COMMIT:
+          commits.push(txn);
+          break;
+        case FIGHER:
+          fighters.push(txn);
+          break;
       }
-    }).catch(function(e) {
-      console.log("# onrestart error = ", e)
-    })
-    // The state machine will resume after this function returns
+    }
+
+    if (fighters.length) {
+      await create(m, 'fighter', fighters.map(fighterMap));
+    }
+
+    if (commits.length) {
+      await create(m, 'commit', commits.map(commitMap));
+    }
+  },
+  onrestart: async function (m) {
+    // Clean up from the last clock timestamp
+    await Promise.all(['commit', 'fighter'].map((coll) => {
+      return m.state.delete({
+        name: coll,
+        filter: {
+          find: {
+            "blk.i": { $gt: m.clock.self.now }
+          }
+        },
+        onerror: function (e) {
+          // duplicates are ok because they will be ignored
+          if (e.code !== 11000) {
+            console.log('## ERR ', e, m.clock.bitcoin.now, m.clock.self.now)
+            process.exit()
+          }
+        }
+      });
+    }))
+    .catch(function (e) {
+      console.log("# onrestart error = ", e);
+    });
+
+
+  // The state machine will resume after this function returns
   }
 }
