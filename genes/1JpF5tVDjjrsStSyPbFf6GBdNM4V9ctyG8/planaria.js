@@ -102,7 +102,7 @@ module.exports = {
       const opRet = txn.out.find((out) => out.b0.op == 106);
       if (!opRet) continue;
 
-      switch (opRet.s2) {
+      switch (opRet.s1) {
         case COMMIT:
           commits.push(txn);
           break;
