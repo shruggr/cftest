@@ -23,7 +23,7 @@ module.exports = {
       unique: ['txnId']
     }
   },
-  onmempool: async function(m) {
+  onmempool: async function (m) {
     // const opRet = m.input.out.find((out) => out.b0.op == 106);
     // if(opRet && opRet.s1 == BATTLE) {
     //   m.state.create({
@@ -36,40 +36,28 @@ module.exports = {
     //   })
     // }
   },
-  onblock: async function(m) {
-    const txns = m.input.items.filter((txn) => {
-      const opRet = txn.out.find((out) => out.b0.op == 106);
-      return opRet && opRet.s1 == BATTLE;
+  onblock: async function (m) {
+
+    m.state.create({
+      name: 'battle',
+      data: m.input.items
+        .filter((txn) => {
+          const opRet = txn.out.find((out) => out.b0.op == 106);
+          return opRet && opRet.s1 == BATTLE;
+        })
+        .map((txn) => {
+          const opRet = txn.out.find((out) => out.b0.op == 106);
+          return {
+            txnId: txn.tx.h,
+            hashChain: opRet.s2,
+            commitTxns: [opRet.s3, opRet.s4]
+          }
+        })
     });
-
-    await Promise.all(txns.map((txn) => {
-      const opRet = txn.out.find((out) => out.b0.op == 106);
-      m.data
-    }))
-
-    if(opRet && opRet.s1 == BATTLE) {
-      m.state.create({
-        name: 'battle',
-        data: m.input.items
-          .filter((txn) => {
-            const opRet = txn.out.find((out) => out.b0.op == 106);
-            return opRet && opRet.s1 == BATTLE;
-          })
-          .map((txn) => {
-            const opRet = txn.out.find((out) => out.b0.op == 106);
-            return {
-              txnId: txn.tx.h,
-              hashChain: opRet.s2,
-              commitTxns: [opRet.s3, opRet.s4]
-            }
-          }),
-        onerror: (e) => { if (e.code != 11000) { process.exit() } }
-      })
-    }
     // Triggered for every new block event
     // https://docs.planaria.network/#/api?id=onblock
   },
-  onrestart: async function(m) {
+  onrestart: async function (m) {
     // Clean up for when the nede restarts
     // https://docs.planaria.network/#/api?id=onrestart
   }
