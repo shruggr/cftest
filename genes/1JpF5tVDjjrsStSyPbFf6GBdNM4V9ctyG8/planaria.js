@@ -13,7 +13,7 @@ module.exports = {
   description: '',
   address: '1JpF5tVDjjrsStSyPbFf6GBdNM4V9ctyG8',
   index: {
-    b: {
+    fighter: {
       keys: [
         'tx.h', 'blk.i', 'blk.t', 'blk.h'
       ],
@@ -40,7 +40,7 @@ module.exports = {
     // https://docs.planaria.network/#/api?id=onblock
     console.log("## onblock", "Block Size: ", m.input.block.items.length, "Mempool Size: ", m.input.mempool.items.size)
     await m.state.create({
-      name: "b",
+      name: "fighter",
       data: m.input.block.items
         .filter((txn) => {
           const opRet = txn.out.find((out) => out.b0.op == 106);
@@ -67,7 +67,7 @@ module.exports = {
 
     m.input.block.items.forEach(function(i) {
       m.output.publish({
-        name: "b",
+        name: "fighter",
         data: i
       })
     })
@@ -75,7 +75,7 @@ module.exports = {
   onrestart: async function(m) {
     // Clean up from the last clock timestamp
     await m.state.delete({
-      name: 'b',
+      name: 'fighter',
       filter: {
         find: {
           "blk.i": { $gt: m.clock.self.now }
