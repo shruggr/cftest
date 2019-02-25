@@ -123,8 +123,10 @@ module.exports = {
         commitBattles[opRet.s4] = m.input.tx.h;
         await m.state.update({
           name: 'commit',
-          find: {
-            "tx.h": {$in: Object.keys(commitBattles)}
+          filter: {
+            find: {
+              "tx.h": {$in: Object.keys(commitBattles)}
+            }
           },
           map: (commit) => {
             commit.b = commitBattles[commit.tx.h]
@@ -133,7 +135,7 @@ module.exports = {
         })
         .catch(function(e) {
           if (e.code != 11000) {
-            console.log("# onblock error = ", e)
+            console.log("# onmempool error = ", e)
             process.exit()
           }
         })
@@ -184,8 +186,10 @@ module.exports = {
     if(Object.keys(commitBattles).length) {
       await m.state.update({
         name: 'commit',
-        find: {
-          "tx.h": {$in: Object.keys(commitBattles)}
+        filter: {
+          find: {
+            "tx.h": {$in: Object.keys(commitBattles)}
+          }
         },
         map: (commit) => {
           commit.b = commitBattles[commit.tx.h];
@@ -194,7 +198,7 @@ module.exports = {
       })
       .catch(function(e) {
         if (e.code != 11000) {
-          console.log("# onblock error = ", e)
+          console.log("# onblock error = ", e, m.clock.bitcoin.now, m.clock.self.now);
           process.exit()
         }
       })
