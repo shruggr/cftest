@@ -177,26 +177,28 @@ module.exports = {
       await create(m, 'commit', commits.map(commitMap));
     }
 
-    if (battle.length) {
+    if (battles.length) {
       await create(m, 'battle', battles.map(battleMap));
     }
 
-    await m.state.update({
-      name: 'commit',
-      find: {
-        "tx.h": {$in: Object.keys(commitBattles)}
-      },
-      map: (commit) => {
-        commit.b = commitBattles[commit.tx.h];
-        return commit;
-      }
-    })
-    .catch(function(e) {
-      if (e.code != 11000) {
-        console.log("# onblock error = ", e)
-        process.exit()
-      }
-    })
+    if(Object.keys(commitBattles).length) {
+      await m.state.update({
+        name: 'commit',
+        find: {
+          "tx.h": {$in: Object.keys(commitBattles)}
+        },
+        map: (commit) => {
+          commit.b = commitBattles[commit.tx.h];
+          return commit;
+        }
+      })
+      .catch(function(e) {
+        if (e.code != 11000) {
+          console.log("# onblock error = ", e)
+          process.exit()
+        }
+      })
+    }
   },
   onrestart: async function (m) {
     // Clean up from the last clock timestamp
