@@ -12,15 +12,22 @@ function commitMap(txn) {
 
 function fighterMap(txn) {
   const opRet = txn.out.find((out) => out.b0.op == 106);
-  return {
-    tx: txn.tx,
-    blk: txn.blk,
-    o: txn.in[0].e.a,
-    f: JSON.parse(opRet.s2)
+  try {
+    return {
+      tx: txn.tx,
+      blk: txn.blk,
+      o: txn.in[0].e.a,
+      f: JSON.parse(opRet.s2)
+    }
   }
+  catch (e) {
+    return
+  }
+
 }
 
 function create(m, collection, values) {
+  values = values.filter((value) => value);
   return m.state
     .create({
       name: collection,
