@@ -1,4 +1,4 @@
-const { COMMIT, FIGHTER } = require('./constants');
+const { BATTLE, COMMIT, FIGHTER } = require('./constants');
 
 function commitMap(txn) {
   const opRet = txn.out.find((out) => out.b0.op == 106);
