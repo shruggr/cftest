@@ -82,7 +82,7 @@ module.exports = {
     const opRet = m.input.out.find((out) => out.b0.op == 106);
     if (!opRet) return;
 
-    switch (opRet.s2) {
+    switch (opRet.s1) {
       case COMMIT:
         create(m, 'commit', [m.input]);
         break;
