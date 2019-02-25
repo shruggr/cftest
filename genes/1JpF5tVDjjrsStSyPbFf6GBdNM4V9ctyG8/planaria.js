@@ -16,7 +16,7 @@ function fighterMap(txn) {
     tx: txn.tx,
     blk: txn.blk,
     o: txn.in[0].e.a,
-    f: opRet.s2
+    f: JSON.parse(opRet.s2)
   }
 }
 
