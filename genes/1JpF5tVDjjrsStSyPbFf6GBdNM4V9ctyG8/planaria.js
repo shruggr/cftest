@@ -25,7 +25,19 @@ function fighterMap(txn) {
   catch (e) {
     return
   }
+}
 
+function battleMap(txn) {
+  const opRet = txn.out.find((out) => out.b0.op == 106);
+  return {
+    tx: txn.tx,
+    blk: txn.blk,
+    h: opRet.b2,
+    c: [
+      opRet.s3,
+      opRet.s4
+    ]
+  }
 }
 
 function create(m, collection, values) {
@@ -71,9 +83,15 @@ module.exports = {
   description: '',
   address: '1JpF5tVDjjrsStSyPbFf6GBdNM4V9ctyG8',
   index: {
+    battle: {
+      keys: [
+        'tx.h', 'blk.i', 'blk.t', 'blk.h', 'c'
+      ],
+      unique: ['tx.h']
+    },
     commit: {
       keys: [
-        'tx.h', 'blk.i', 'blk.t', 'blk.h', 'v', 'c'
+        'tx.h', 'blk.i', 'blk.t', 'blk.h', 'v', 'c', 'b'
       ],
       unique: ['tx.h']
     },
@@ -93,10 +111,32 @@ module.exports = {
 
     switch (opRet.s1) {
       case COMMIT:
-        create(m, 'commit', [commitMap(m.input)]);
+        await create(m, 'commit', [commitMap(m.input)]);
         break;
       case FIGHTER:
-        create(m, 'fighter', [fighterMap(m.input)]);
+        await create(m, 'fighter', [fighterMap(m.input)]);
+        break;
+      case BATTLE:
+        await create(m, 'battle', [battleMap(m.input)]);
+        const commitBattles = {};
+        commitBattles[opRet.s3] = m.input.tx.h;
+        commitBattles[opRet.s4] = m.input.tx.h;
+        await m.state.update({
+          name: 'commit',
+          find: {
+            "tx.h": {$in: Object.keys(commitBattles)}
+          },
+          map: (commit) => {
+            commit.b = commitBattles[commit.tx.h]
+            return commit;
+          }
+        })
+        .catch(function(e) {
+          if (e.code != 11000) {
+            console.log("# onblock error = ", e)
+            process.exit()
+          }
+        })
         break;
     }
   },
@@ -107,6 +147,8 @@ module.exports = {
 
     const commits = [];
     const fighters = [];
+    const battles = [];
+    const commitBattles = {};
 
     for (let txn of m.input.block.items) {
       const opRet = txn.out.find((out) => out.b0.op == 106);
@@ -119,6 +161,11 @@ module.exports = {
         case FIGHTER:
           fighters.push(txn);
           break;
+        case BATTLE:
+          battles.push(txn);
+          commitBattles[txn.opRet.s3] = txn.tx.h;
+          commitBattles[txn.opRet.s4] = txn.tx.h;
+          break;
       }
     }
 
@@ -129,6 +176,27 @@ module.exports = {
     if (commits.length) {
       await create(m, 'commit', commits.map(commitMap));
     }
+
+    if (battle.length) {
+      await create(m, 'battle', battles.map(battleMap));
+    }
+
+    await m.state.update({
+      name: 'commit',
+      find: {
+        "tx.h": {$in: Object.keys(commitBattles)}
+      },
+      map: (commit) => {
+        commit.b = commitBattles[commit.tx.h];
+        return commit;
+      }
+    })
+    .catch(function(e) {
+      if (e.code != 11000) {
+        console.log("# onblock error = ", e)
+        process.exit()
+      }
+    })
   },
   onrestart: async function (m) {
     // Clean up from the last clock timestamp
