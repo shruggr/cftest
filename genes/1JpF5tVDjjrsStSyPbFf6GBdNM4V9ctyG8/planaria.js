@@ -77,7 +77,7 @@ function create(m, collection, values) {
 * API Reference: https://docs.planaria.network/#/api?id=anatomy-of-a-planaria
 *
 ***************************************/
-module.exports = {
+const planaria =  {
   planaria: '0.0.1',
   from: 570000,
   name: 'cftest',
@@ -214,7 +214,7 @@ module.exports = {
   },
   onrestart: async function (m) {
     // Clean up from the last clock timestamp
-    await Promise.all(['commit', 'fighter'].map((coll) => {
+    await Promise.all(Object.keys(planaria.index).map((coll) => {
       return m.state.delete({
         name: coll,
         filter: {
@@ -239,3 +239,5 @@ module.exports = {
   // The state machine will resume after this function returns
   }
 }
+
+module.exports = planaria;
