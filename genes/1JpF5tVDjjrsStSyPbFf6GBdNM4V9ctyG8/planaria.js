@@ -15,7 +15,8 @@ function fighterMap(txn) {
   return {
     tx: txn.tx,
     blk: txn.blk,
-    fighter: opRet.s2
+    o: txn.in[0].e.a,
+    f: opRet.s2
   }
 }
 
@@ -69,7 +70,7 @@ module.exports = {
     },
     fighter: {
       keys: [
-        'tx.h', 'blk.i', 'blk.t', 'blk.h'
+        'tx.h', 'blk.i', 'blk.t', 'blk.h', 'o'
       ],
       unique: ['tx.h']
     }
