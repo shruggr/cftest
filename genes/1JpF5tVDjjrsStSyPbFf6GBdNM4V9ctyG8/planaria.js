@@ -13,11 +13,13 @@ function commitMap(txn) {
 function fighterMap(txn) {
   const opRet = txn.out.find((out) => out.b0.op == 106);
   try {
+    const fighter = JSON.parse(opRet.s2);
+    fighter.id = txn.tx.h;
     return {
       tx: txn.tx,
       blk: txn.blk,
       o: txn.in[0].e.a,
-      f: JSON.parse(opRet.s2)
+      f: fighter
     }
   }
   catch (e) {
