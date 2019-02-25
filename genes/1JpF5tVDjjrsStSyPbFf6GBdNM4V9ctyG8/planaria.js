@@ -6,7 +6,7 @@ function commitMap(txn) {
     tx: txn.tx,
     blk: txn.blk,
     v: opRet.s2,
-    c: opRet.h3
+    c: opRet.b3
   }
 }
 
