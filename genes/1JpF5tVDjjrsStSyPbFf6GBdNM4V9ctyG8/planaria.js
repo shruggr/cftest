@@ -79,17 +79,17 @@ module.exports = {
     // Triggered for every mempool tx event
     // https://docs.planaria.network/#/api?id=onmempool
     console.log("## onmempool", m.input)
-    // const opRet = m.input.out.find((out) => out.b0.op == 106);
-    // if (!opRet) continue;
+    const opRet = m.input.out.find((out) => out.b0.op == 106);
+    if (!opRet) continue;
 
-    // switch (opRet.s2) {
-    //   case COMMIT:
-    //     create(m, 'commit', [m.input]);
-    //     break;
-    //   case FIGHTER:
-    //     create(m, 'fighter', [m.input]);
-    //     break;
-    // }
+    switch (opRet.s2) {
+      case COMMIT:
+        create(m, 'commit', [m.input]);
+        break;
+      case FIGHTER:
+        create(m, 'fighter', [m.input]);
+        break;
+    }
   },
   onblock: async function (m) {
     // Triggered for every new block event
