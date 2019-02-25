@@ -54,8 +54,10 @@ function create(m, collection, values) {
       }
     })
     .catch(function (e) {
-      console.log("# onblock error = ", e)
-      process.exit()
+      if (e.code != 11000) {
+        console.log("# onblock error = ", e)
+        process.exit()
+      }
     })
     .then(() => {
       for (let value of values) {
@@ -194,6 +196,12 @@ module.exports = {
         map: (commit) => {
           commit.b = commitBattles[commit.tx.h];
           return commit;
+        },
+        onerror: function (e) {
+          if (e.code != 11000) {
+            console.log("# Error", e, m.input, m.clock.bitcoin.now, m.clock.self.now)
+            process.exit()
+          }
         }
       })
       .catch(function(e) {
