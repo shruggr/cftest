@@ -84,10 +84,10 @@ module.exports = {
 
     switch (opRet.s1) {
       case COMMIT:
-        create(m, 'commit', [m.input]);
+        create(m, 'commit', [commitMap(m.input)]);
         break;
       case FIGHTER:
-        create(m, 'fighter', [m.input]);
+        create(m, 'fighter', [fighterMap(m.input)]);
         break;
     }
   },
