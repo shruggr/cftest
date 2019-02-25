@@ -163,8 +163,8 @@ module.exports = {
           break;
         case BATTLE:
           battles.push(txn);
-          commitBattles[txn.opRet.s3] = txn.tx.h;
-          commitBattles[txn.opRet.s4] = txn.tx.h;
+          commitBattles[opRet.s3] = txn.tx.h;
+          commitBattles[opRet.s4] = txn.tx.h;
           break;
       }
     }
