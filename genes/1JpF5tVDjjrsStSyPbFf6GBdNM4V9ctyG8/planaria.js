@@ -80,7 +80,7 @@ function create(m, collection, values) {
 ***************************************/
 const planaria =  {
   planaria: '0.0.1',
-  from: 570000,
+  from: 571220,
   name: 'cftest',
   version: '0.0.1',
   description: '',
