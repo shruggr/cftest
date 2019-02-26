@@ -23,6 +23,7 @@ function fighterMap(txn) {
     }
   }
   catch (e) {
+    console.log(`# fighterMap: `, e);
     return
   }
 }
@@ -89,7 +90,7 @@ const planaria =  {
       keys: [
         'tx.h', 'blk.i', 'blk.t', 'blk.h', 'c'
       ],
-      unique: ['tx.h']
+      unique: ['tx.h'],
     },
     commit: {
       keys: [
