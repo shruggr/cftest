@@ -108,19 +108,21 @@ const planaria =  {
   onmempool: async function (m) {
     // Triggered for every mempool tx event
     // https://docs.planaria.network/#/api?id=onmempool
-    console.log("## onmempool", m.input)
     const opRet = m.input.out.find((out) => out.b0.op == 106);
     if (!opRet) return;
 
     switch (opRet.s1) {
       case COMMIT:
         await create(m, 'commit', [commitMap(m.input)]);
+        console.log("## onmempool - commit", m.input.tx.h);
         break;
       case FIGHTER:
         await create(m, 'fighter', [fighterMap(m.input)]);
+        console.log("## onmempool - fighter", m.input.tx.h);
         break;
       case BATTLE:
         await create(m, 'battle', [battleMap(m.input)]);
+        console.log("## onmempool - battle", m.input.tx.h);
         const commitBattles = {};
         commitBattles[opRet.s3] = m.input.tx.h;
         commitBattles[opRet.s4] = m.input.tx.h;
