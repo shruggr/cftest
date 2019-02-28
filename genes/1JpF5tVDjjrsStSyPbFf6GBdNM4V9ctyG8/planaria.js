@@ -216,7 +216,7 @@ const planaria =  {
     }
 
     if (inits.length) {
-      await create(m, 'init', inits.map(battleMap));
+      await create(m, 'init', inits.map(initMap));
     }
 
     if(Object.keys(commitBattles).length) {
