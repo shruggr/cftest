@@ -21,7 +21,7 @@ module.exports = {
       q: { find: {} }
     },
     api: {},
-    topics: ["c", "u"]
+    topics: ['battle', 'commit', 'fighter']
   },
   transform: {
     request: bcode.encode,

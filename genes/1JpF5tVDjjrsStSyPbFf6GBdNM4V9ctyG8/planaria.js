@@ -41,6 +41,20 @@ function battleMap(txn) {
   }
 }
 
+function initMap(txn) {
+  const opRet = txn.out.find((out) => out.b0.op == 106);
+  return {
+    tx: txn.tx,
+    blk: txn.blk,
+    h: opRet.b2,
+    b: txn.in[0].e.h,
+    f: opRet.s3,
+    a: opRet.s4,
+    m: opRet.s5,
+    o: opRet.s6
+  }
+}
+
 function create(m, collection, values) {
   values = values.filter((value) => value);
   return m.state
@@ -69,7 +83,6 @@ function create(m, collection, values) {
       }
     });
 }
-
 
 /***************************************
 *
@@ -101,6 +114,12 @@ const planaria =  {
     fighter: {
       keys: [
         'tx.h', 'blk.i', 'blk.t', 'blk.h', 'o'
+      ],
+      unique: ['tx.h']
+    },
+    init: {
+      keys: [
+        'tx.h', 'blk.i', 'blk.t', 'blk.h', 'b', 'f', 'a', 'm', 'o'
       ],
       unique: ['tx.h']
     }
@@ -145,6 +164,10 @@ const planaria =  {
           }
         })
         break;
+      case INIT:
+        await create(m, 'init', [initMap(m.input)]);
+        console.log("## onmempool - init", m.input.tx.h);
+        break;
     }
   },
   onblock: async function (m) {
@@ -155,6 +178,7 @@ const planaria =  {
     const commits = [];
     const fighters = [];
     const battles = [];
+    const inits = [];
     const commitBattles = {};
 
     for (let txn of m.input.block.items) {
@@ -173,7 +197,10 @@ const planaria =  {
           commitBattles[opRet.s3] = txn.tx.h;
           commitBattles[opRet.s4] = txn.tx.h;
           break;
-      }
+        case INIT:
+          inits.push(txn);
+          break;
+        }
     }
 
     if (fighters.length) {
@@ -186,6 +213,10 @@ const planaria =  {
 
     if (battles.length) {
       await create(m, 'battle', battles.map(battleMap));
+    }
+
+    if (inits.length) {
+      await create(m, 'init', inits.map(battleMap));
     }
 
     if(Object.keys(commitBattles).length) {
