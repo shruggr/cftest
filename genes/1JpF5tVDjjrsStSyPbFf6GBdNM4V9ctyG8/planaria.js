@@ -48,10 +48,10 @@ function initMap(txn) {
     blk: txn.blk,
     h: opRet.b2,
     b: txn.in[0].e.h,
-    f: opRet.s3,
-    a: opRet.s4,
-    m: opRet.s5,
-    o: opRet.s6
+    f: opRet.s2,
+    a: opRet.s3,
+    m: opRet.s4,
+    o: opRet.s5
   }
 }
 
